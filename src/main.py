@@ -43,7 +43,7 @@ def main():
 
     """--------------choose different controller--------------"""
     control_type = {0: "train_NN", 1: "use_NN", 2: "A_star", 3: "manual", 4: "Expert"}
-    control_mode = 1
+    control_mode = 0
 
     """--------------run model--------------"""
     print("Model is controlled by %s mode" % control_type[control_mode])
