@@ -2,3 +2,14 @@ src/algorithm/Manager/ExpertData/*
 src/algorithm/DQN_structure/323321/*
 src/algorithm/DQN_structure/423421/*
 src/algorithm/DQN_structure/523521/*
+# 忽略 Python 字节码
+**/__pycache__/
+*.py[cod]
+*$py.class
+
+# 忽略 VS Code 配置 (全忽略)
+.vscode/
+
+.idea/
+
+ReadMe_Assets/
