@@ -17,6 +17,13 @@ class SuperParas:
     # sparse reward
     Sparse_Reward = False
 
+    # Debug prints in training loop (collision/boundary logs). Keep False for speed.
+    Debug_Train_Log = False
 
+    # Lightweight dense reward (no A*): encourage moving toward target each step.
+    Distance_Shaping_Reward = True
+    Distance_Shaping_Positive = 0.02
+    Distance_Shaping_Negative = -0.02
+    Distance_Shaping_Stay = -0.003
 
 

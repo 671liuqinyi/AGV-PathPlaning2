@@ -31,7 +31,7 @@ class DQNAgentController:
     def __init__(self, rmfs_scene, map_xdim, map_ydim, max_task, control_mode=1, state_number=4):
 
         # ========== 新增：动态设置基础路径 + 生成run文件夹 ==========
-        self.base_save_path = 'algorithm/DQN_structure/323321'  # 可替换为[323321/423421/523521]
+        self.base_save_path = 'algorithm/DQN_structure/823631'  # 可替换为[323321/423421/523521]
         # 确保基础目录存在
         os.makedirs(self.base_save_path, exist_ok=True)
         os.makedirs(os.path.join(self.base_save_path, 'train'), exist_ok=True)

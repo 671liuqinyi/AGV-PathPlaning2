@@ -157,7 +157,8 @@ class Explorer:
                 current_place[0] > self.layout.scene_x_width or current_place[1] > self.layout.scene_y_width:
             self.running_state = "illegal action"
             reward, is_end = -1, True
-            print("out of boundary")
+            if SuperPara.Debug_Train_Log:
+                print("out of boundary")
             return reward, is_end
         """"hit storage position or picking station """
         # hit storage position
@@ -165,14 +166,16 @@ class Explorer:
                 self.loaded is True and current_place != self.target_position:
             self.running_state = "hit s_station"
             reward, is_end = -1, True
-            print("hit s_station")
+            if SuperPara.Debug_Train_Log:
+                print("hit s_station")
             return reward, is_end
         # hit picking position
         if (current_place[0], current_place[1]) in self.layout.picking_station_list and \
                 current_place != self.target_position:  # no need to check load condition
             self.running_state = "hit p_station"
             reward, is_end = -1, True
-            print("hit p_station")
+            if SuperPara.Debug_Train_Log:
+                print("hit p_station")
             return reward, is_end
         """"hit other veh """
         for i in range(1, len(all_info)):  # the first position of info is layout
@@ -183,7 +186,8 @@ class Explorer:
             else:
                 if current_place == current_place_:
                     reward, is_end = -1, True
-                    print("hit other veh")
+                    if SuperPara.Debug_Train_Log:
+                        print("hit other veh")
                     return reward, is_end
         """reach target place"""
         if current_place[0] == self.target_position[0] and current_place[1] == self.target_position[1]:
@@ -205,6 +209,8 @@ class Explorer:
         """normal action"""
         if SuperPara.Sparse_Reward:
             reward = self.rectify_reward(explorer_group, current_place)
+        elif SuperPara.Distance_Shaping_Reward:
+            reward = self.distance_shaping_reward(current_place)
         return reward, is_end
 
     def rectify_reward(self, explorer_group, current_place):
@@ -247,6 +253,20 @@ class Explorer:
         # reward = reward + reward1
         reward = reward1
         return reward
+
+    def distance_shaping_reward(self, current_place):
+        old_dist = abs(self.current_place[0] - self.target_position[0]) + abs(
+            self.current_place[1] - self.target_position[1]
+        )
+        new_dist = abs(current_place[0] - self.target_position[0]) + abs(
+            current_place[1] - self.target_position[1]
+        )
+
+        if new_dist < old_dist:
+            return SuperPara.Distance_Shaping_Positive
+        if new_dist > old_dist:
+            return SuperPara.Distance_Shaping_Negative
+        return SuperPara.Distance_Shaping_Stay
 
     def continue_working(self):
         self.task_stage = self.task_stage + 1

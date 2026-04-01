@@ -1,0 +1,48 @@
+# M-MAPPO Paper Figure (Simplified)
+
+```mermaid
+flowchart LR
+    %% ---------- Inference ----------
+    subgraph INFER["Online Execution (Decentralized Actor)"]
+        O["Local Obs o_i<br/>3-channel grid"] --> ENC["Shared CNN Encoder"]
+        F["Expert Features f_i<br/>19-d"] --> G["Gate"]
+        ENC --> G
+
+        ENC --> E0["Expert 1<br/>Straight"]
+        ENC --> E1["Expert 2<br/>Obstacle"]
+        ENC --> E2["Expert 3<br/>Yielding"]
+
+        G --> MIX["MoE Fusion<br/>sum(g_k * logits_k)"]
+        E0 --> MIX
+        E1 --> MIX
+        E2 --> MIX
+
+        MIX --> M["Action Mask"]
+        M --> PI["Categorical Policy pi(a_i|o_i,f_i)"]
+        PI --> A["Action a_i"]
+        PI --> LP["log pi(a_i)"]
+    end
+
+    %% ---------- Training ----------
+    subgraph TRAIN["Centralized Training (MAPPO)"]
+        S["Global State s<br/>layout + all AGVs"] --> V["Central Critic V(s)"]
+        A --> B["Rollout Buffer"]
+        LP --> B
+        V --> B
+        R["Reward r, Done"] --> B
+
+        B --> GAE["GAE Advantage"]
+        GAE --> PPO["PPO-Clip Update"]
+        PPO --> L1["Actor Loss<br/>policy + entropy + MoE balance"]
+        PPO --> L2["Critic Loss<br/>value MSE"]
+        L1 --> UP1["Update Actor + Gate + Experts"]
+        L2 --> UP2["Update Critic"]
+    end
+
+    %% ---------- Style links ----------
+    S -. train only .-> B
+```
+
+Suggested figure caption:
+`Figure X. Overview of M-MAPPO. The actor is a mixture-of-experts policy with a learned gate, while training follows centralized MAPPO with a global critic and GAE-PPO optimization.`
+

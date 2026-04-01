@@ -7,6 +7,7 @@ import time
 import numpy as np
 # import SumTree
 import utils.astar as astar
+
 np.set_printoptions(threshold=np.inf)
 
 # architecture used for layout smallGrid
@@ -29,12 +30,12 @@ class Net(nn.Module):
         self.conv4 = nn.Conv2d(node_num_3, node_num_4, kernel_size=(3, 3), stride=(1, 1), padding=1)
         self.conv_pool2 = nn.MaxPool2d(kernel_size=(2, 2), stride=(2, 2))
 
-        self.fc3 = nn.Linear(node_num_4*int(map_xdim/4)*int(map_ydim/4), 256)
+        self.fc3 = nn.Linear(node_num_4 * int(map_xdim / 4) * int(map_ydim / 4), 256)
         self.fc4 = nn.Linear(256, num_actions)
         self.dropout = nn.Dropout(p=0.5)  # dropout训练
 
         # info for training
-        
+
     def forward(self, x):
         x = F.relu(self.conv1(x))
         x = F.relu(self.conv2(x))
@@ -200,6 +201,21 @@ class Agent:
         self.loss_function = torch.nn.SmoothL1Loss()
         self.loss_value = []
 
+    # 测试用
+    def choose_action_test(self, obs, current_place, target_place, valid_path_matrix):
+        state = torch.from_numpy(obs).float().unsqueeze(0)  # array to torch
+        # state = torch.unsqueeze(state, 0)
+        state = state.to(self.device)  # transform to GPU
+        t_s = time.time()
+        actions_value = self.policy_network.forward(state)  # get action
+        t_e = time.time()
+        action = torch.max(actions_value.cpu(), 1)[1].data.numpy()
+        # action = np.random.randint(0, 4)  # (完全随机)
+        # action = np.array([action])
+        t_ = t_e - t_s
+        return action, t_
+
+    # 训练用
     def choose_action(self, obs, current_place, target_place, valid_path_matrix, matrix_padding=0):
         if np.random.uniform() < self.epsilon:  # greedy
             state = torch.from_numpy(obs).float().unsqueeze(0)  # array to torch
@@ -216,7 +232,7 @@ class Agent:
             action = self.find_action_astar(valid_path_matrix, current_place, target_place)
             t_e = time.time()
             action = np.array([action])
-        t_ = t_e-t_s
+        t_ = t_e - t_s
         return action, t_
 
     def choose_action_as(self, current_place, target_place, valid_path_matrix, matrix_padding=0):
@@ -225,8 +241,8 @@ class Agent:
         return action
 
     def find_action_astar(self, matrix_valid_map, current_position, target_position):
-        path_founder = astar.FindPathAstar(matrix_valid_map, (current_position[0]-1, current_position[1]-1),
-                                           (target_position[0]-1, target_position[1]-1))
+        path_founder = astar.FindPathAstar(matrix_valid_map, (current_position[0] - 1, current_position[1] - 1),
+                                           (target_position[0] - 1, target_position[1] - 1))
         find_target, path_list, path_map, action_list = path_founder.run_astar_method()
         if find_target == False or len(action_list) == 0:
             action_str = "STOP"
@@ -331,20 +347,15 @@ class Agent:
         if self.lr_count > times:
             return
         else:
-            self.lr = self.lr - (self.lr_start - self.lr_end)/times
+            self.lr = self.lr - (self.lr_start - self.lr_end) / times
         self.lr_count += 1
 
     def change_explore_rate(self, times):
         if self.epsilon_count >= times:
             self.epsilon = self.epsilon_end
         else:
-            self.epsilon = self.epsilon + (self.epsilon_end - self.epsilon_start)/times
+            self.epsilon = self.epsilon + (self.epsilon_end - self.epsilon_start) / times
         self.epsilon_count += 1
 
         if self.epsilon_count == times:
             print("exploring rate is 1.")
-
-
-
-
-

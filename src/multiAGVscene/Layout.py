@@ -13,7 +13,8 @@ class Layout:
     3.manage layout information
     """
     def __init__(self, storage_station_x_width=3, storage_station_y_width=2, storage_station_x_num=2,
-                 storage_station_y_num=2, picking_station_number=2, layout_list=None, task_list=None):
+                 storage_station_y_num=2, picking_station_number=2, layout_list=None, task_list=None,
+                 task_num_limit=None):
         """--------------create layout--------------"""
         if layout_list is None:
             """storage station location"""
@@ -42,6 +43,7 @@ class Layout:
         """--------------create task--------------"""
         self.task_list = None
         self.task_is_fixed = True
+        self.task_num_limit = task_num_limit
         if task_list is None:
             self.task_is_fixed = False
         else:
@@ -105,14 +107,20 @@ class Layout:
         task_list = []
         ss_list = copy.deepcopy(self.storage_station_list)
         ps_list = copy.deepcopy(self.picking_station_list)
-        while True:
+        task_target_num = len(ss_list)
+        if self.task_num_limit is not None:
+            try:
+                task_target_num = int(self.task_num_limit)
+            except (TypeError, ValueError):
+                task_target_num = len(ss_list)
+            task_target_num = max(1, min(task_target_num, len(ss_list)))
+
+        while len(task_list) < task_target_num:
             i = random.randint(0, len(ss_list)-1)
             j = random.randint(0, len(ps_list)-1)
             start_location = ss_list.pop(i)
             target_location = ps_list[j]
             task_list.append(start_location+target_location)
-            if len(ss_list) == 0:
-                break
         return task_list
 
     def __create_layout(self):
